@@ -54,28 +54,39 @@ function aggregateData(originalData: DataRow[], groupNames: string[]) {
     });
 }
 
-export default class GroupPicker extends React.Component<{
+interface Props {
     onChangeGroup: (data: DataRow[]) => void;
-    data: DataRow[]
-}> {
+    data: DataRow[];
+}
+
+export default class GroupPicker extends React.Component<Props> {
     state = {
         checked: {},
     };
+
+    componentWillReceiveProps(nextProps: Props) {
+        if (this.props.data === nextProps.data) return;
+        this.processData(nextProps);
+    }
 
     handleInputChange = (key: string, value: boolean) => {
         console.log('handleChange', key, value);
         const stateClone = Object.assign({}, this.state);
         stateClone.checked[key] = value;
         this.setState(stateClone);
+        this.processData(this.props);
+    }
+
+    processData = (props: Props) => {
         const groupNames = Object.keys(this.state.checked).filter(k => this.state.checked[k]);
-        this.props.onChangeGroup(aggregateData(this.props.data, groupNames));
+        props.onChangeGroup(aggregateData(props.data, groupNames));
     }
 
     render() {
         return (
             <div>
                 {GROUP_NAMES.map(key => (
-                    <div key={key}>
+                    <span key={key} style={{ margin: 10 }}>
                         <input
                             name={key}
                             type="checkbox"
@@ -83,7 +94,7 @@ export default class GroupPicker extends React.Component<{
                             onChange={e => this.handleInputChange(key, e.target.checked)}
                         />
                         <label htmlFor={key}>{key}</label>
-                    </div>
+                    </span>
                 ))}
             </div>
         );

@@ -32,3 +32,11 @@ export const GROUP_NAMES = [
     'request_query',
     'request_body',
 ];
+
+export const FILTER_NAMES = [
+    'request_method',
+    'request_status',
+    'request_uri',
+    'request_query',
+    'request_body',
+];
