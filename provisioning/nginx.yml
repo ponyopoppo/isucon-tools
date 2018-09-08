@@ -11,7 +11,7 @@
 - name: nginx log file
   file: path=/var/log/nginx state=directory
 - name: Set permission of nginx log file
-  file: path=/var/log/nginx owner=nginx group=nginx mode=0644
+  file: path=/var/log/nginx owner=nginx group=nginx mode=0777
 - name: Install nginx
   action: "{{ ansible_pkg_mgr }} name=nginx"
 - name: Configure nginx
