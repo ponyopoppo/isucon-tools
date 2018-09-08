@@ -1,0 +1,22 @@
+- name: nginx group
+  group:
+    name: nginx
+    state: present
+- name: nginx user
+  user:
+    name: nginx
+    password: nginx-password
+    groups: nginx  
+    shell: /bin/bash
+- name: nginx log file
+  file: path=/var/log/nginx state=directory
+- name: Set permission of nginx log file
+  file: path=/var/log/nginx owner=nginx group=nginx mode=0644
+- name: Install nginx
+  action: "{{ ansible_pkg_mgr }} name=nginx"
+- name: Configure nginx
+  copy:
+    src: nginx/nginx.conf
+    dest: /etc/nginx/nginx.conf
+  notify:
+    - restart nginx

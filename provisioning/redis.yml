@@ -1,0 +1,8 @@
+- name: Redis | Install the packages
+  apt: name={{ item }} state=present update_cache=yes allow_unauthenticated=yes
+  with_items:
+    - redis-server
+- name: Redis | Delete local bindIp
+  lineinfile: "dest=/etc/redis/redis.conf regexp='^bind 127.0.0.1' state=absent"
+- name: Redis | Listen to all ip
+  lineinfile: "dest=/etc/redis/redis.conf line='bind 0.0.0.0' state=present"
