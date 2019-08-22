@@ -1,4 +1,5 @@
 interface DataRow {
+    id: number;
     remote_addr: string;
     time_local: string;
     request_uri: string;

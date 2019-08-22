@@ -83,8 +83,16 @@ export default class GroupPicker extends React.Component<Props> {
     }
 
     render() {
+        const hasChecked = Object.keys(this.state.checked).some(key => this.state.checked[key]);
         return (
             <div>
+                <div>
+                    {hasChecked ?
+                        <button onClick={() => GROUP_NAMES.forEach(key => this.handleInputChange(key, false))}>unselect all</button>
+                        :
+                        <button onClick={() => GROUP_NAMES.forEach(key => this.handleInputChange(key, true))}>select all</button>
+                    }
+                </div>
                 {GROUP_NAMES.map(key => (
                     <span key={key} style={{ margin: 10 }}>
                         <input

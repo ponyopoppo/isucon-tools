@@ -1,4 +1,5 @@
 export const DATA_ROW_KEYS = [
+    'id',
     'request_method',
     'request_status',
     'request_uri',
@@ -23,6 +24,7 @@ export const SHORT_KEYS = [
 ];
 
 export const GROUP_NAMES = [
+    'id',
     'request_method',
     'request_status',
     'request_uri_1',

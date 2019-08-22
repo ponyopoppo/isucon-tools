@@ -23,8 +23,9 @@ export async function parse(e: React.ChangeEvent<HTMLInputElement>): Promise<Dat
     const rows = text.split('\n')
         .filter(row => row)
         .map(row => row.split('★☆★'))
-        .map((row) => {
+        .map((row, i) => {
             const ret = {};
+            (ret as any).id = i;
             row.forEach((entity) => {
                 const key = entity.split(':')[0];
                 const value = entity.split(':').slice(1).join(':');
