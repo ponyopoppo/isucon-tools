@@ -1,0 +1,55 @@
+#Useful git aliases for everyone to use
+[alias]
+    cpx = cherry-pick -x
+    stat = status
+    st = status
+    ci = commit
+    co = checkout
+    br = branch
+    brall = branch -a
+    brex = branch-exists
+    last = log -1 HEAD
+    lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    # see the revision history similar to gitk but in the command line
+    lol = log --pretty=format:'%C(yellow)%h %C(blue bold)%ad%C(reset)%C(auto)%d %C(reset)%s %C(green)[%cn]' --date=short --all --graph --decorate
+    # pretty one-line log with tags, branches and authors
+    ls = log --pretty=format:'%C(yellow)%h %C(blue bold)%ad %C(reset)%C(auto)%d %C(reset)%s%C(green) [%cn]' --decorate --date=short
+    # more verbose log that shows changed files
+    ll = log --pretty=format:'%C(yellow)%h %C(blue bold)%ad %C(reset)%C(auto)%d %C(reset)%s%C(green) [%cn]' --decorate --date=short --stat
+    show-short = log -n 1 --pretty=format:'%C(yellow)%D: %C(reset)%C(green)(%H) %C(reset)%s%C(green) [%cn] %C(blue bold)%ad' --decorate --date=short
+    ss = !git show-short
+    who = shortlog -n -s --no-merges
+    ls-new = ls-files -o --exclude-per-directory=.gitignore
+    aa= !git add -u && git add . && git status
+    cl=clone-project
+    cob = checkout -b
+    showcommit = show --pretty="format:" --name-only
+    dc = diff --cached
+    dct = difftool --cached
+    dt = difftool
+    undo = reset --soft HEAD^
+    unstage = reset HEAD --
+    code-review = diff -p --no-prefix -U1000
+    brd = branch-delete
+    brdr = push origin --delete
+    ft = fetch --tags
+    po = push -u origin
+    fs = feature-start
+    hs = hack-start
+    fco = feature-checkout
+    ff = feature-finish
+    hf = hack-finish
+    relstart = release-start
+    relco = release-checkout
+    relfin = release-finish
+    rup = remote-update-and-purge
+    pushup = push-and-track
+    ctrl = control-tower
+    aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /' | sort -u
+    omr = open-mr
+    ignored = !git ls-files -v | grep '^[[:lower:]]'|cut -d ' ' -f 2
+    unshallow = !git remote set-branches origin '*' && git fetch --unshallow
+
+[user]
+	name = FCCPC_yurarin
+	email = fccpc_yurarin@gmail.com
