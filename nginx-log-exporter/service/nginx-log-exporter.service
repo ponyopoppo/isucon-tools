@@ -1,0 +1,15 @@
+[Unit]
+Description=nginx-log-exporter
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=bash PROJECT_DIR/run.sh
+WorkingDirectory=PROJECT_DIR/
+KillMode=process
+Restart=always
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
