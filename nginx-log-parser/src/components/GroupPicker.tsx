@@ -96,6 +96,7 @@ export default class GroupPicker extends React.Component<Props> {
                 {GROUP_NAMES.map(key => (
                     <span key={key} style={{ margin: 10 }}>
                         <input
+                            id={key}
                             name={key}
                             type="checkbox"
                             checked={!!this.state.checked[key]}

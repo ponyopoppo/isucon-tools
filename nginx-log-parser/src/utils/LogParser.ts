@@ -1,7 +1,9 @@
 const reader = new FileReader();
 
-async function readText(e: React.ChangeEvent<HTMLInputElement>): Promise<string> {
-    return new Promise<string>((resolve) => {
+export async function readText(
+    e: React.ChangeEvent<HTMLInputElement>,
+): Promise<string> {
+    return new Promise<string>(resolve => {
         reader.onload = (e: any) => {
             if (!e.target) return;
             if (e.target.readyState !== 2) return;
@@ -18,21 +20,31 @@ async function readText(e: React.ChangeEvent<HTMLInputElement>): Promise<string>
     });
 }
 
-export async function parse(e: React.ChangeEvent<HTMLInputElement>): Promise<DataRow[]> {
-    const text = await readText(e);
-    const rows = text.split('\n')
+export async function parse(text: string): Promise<DataRow[]> {
+    console.log({ text });
+    const rows = text
+        .split('\n')
         .filter(row => row)
-        .map(row => row.split('★☆★'))
+        .map(row => {
+            try {
+                return JSON.parse(row);
+            } catch (e) {
+                return null;
+            }
+        })
+        .filter(row => row)
         .map((row, i) => {
             const ret = {};
             (ret as any).id = i;
-            row.forEach((entity) => {
-                const key = entity.split(':')[0];
-                const value = entity.split(':').slice(1).join(':');
+            Object.keys(row).forEach(key => {
+                const value = row[key];
                 if (!key) return;
                 if (key === 'request_uri') {
                     ret[key] = value.split('?')[0];
-                    ret['request_query'] = value.split('?').slice(1).join('?');
+                    ret['request_query'] = value
+                        .split('?')
+                        .slice(1)
+                        .join('?');
                     return;
                 }
                 ret[key] = value;

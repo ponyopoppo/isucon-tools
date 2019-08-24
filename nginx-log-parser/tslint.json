@@ -1,18 +1,1 @@
-{
-  "extends": "tslint-config-airbnb",
-  "rules": {
-      "ter-indent": [true, 4],
-      "max-line-length": [true, 200],
-      "import-name": false,
-      "variable-name": false,
-      "radix": false,
-      "align": false
-  },
-  "linterOptions": {
-    "exclude": [
-      "config/**/*.js",
-      "node_modules/**/*.ts",
-      "coverage/lcov-report/*.js"
-    ]
-  }
-}
+{}

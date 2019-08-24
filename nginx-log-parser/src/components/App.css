@@ -1,0 +1,25 @@
+.fetch-form {
+    margin: 5px;            
+}
+
+.fetch-field {
+    width: 200px;
+}
+
+.fetch-button {    
+    background: #3498db;
+    color: white;
+}
+
+.selected-file-button {
+    margin: 5px;        
+    padding: 5px;
+    color: white;
+    background: #2ecc71;
+}
+
+.file-button {
+    margin: 5px;    
+    padding: 5px;
+    background: #ecf0f1;
+}
