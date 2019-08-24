@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",        
+    "target": "es5",
+    "lib": ["es6"],    
+    "allowJs": true,    
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": ".",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "noUnusedLocals": false
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
