@@ -23,3 +23,8 @@
     padding: 5px;
     background: #ecf0f1;
 }
+
+.remove-copied {
+    background: #e74c3c;
+    color: white;
+}

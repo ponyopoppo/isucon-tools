@@ -78,15 +78,31 @@ class App extends React.Component {
 
     private handleClickMove = async (e: any) => {
         e.preventDefault();        
-        if (!confirm('Are you sure?')) return;
-        await fetch(`${this.state.targetUrl}/copy/${this.state.currentFile}/${this.state.copyTo}`, {
+        const score = prompt('スコアは？');
+        if (!score) return;        
+        const newFile = this.state.copyTo + '__' + score;
+        await fetch(`${this.state.targetUrl}/copy/${this.state.currentFile}/${newFile}`, {
             method: 'POST'
         });        
-        await fetch(`${this.state.targetUrl}/${this.state.currentFile}`, { method: 'DELETE' });                                        
-        console.log('hit1')
-        await this.handleClickFetch(e);        
-        console.log('hit2')
-        await this.handleClickRemoteFile(this.state.copyTo)();
+        await fetch(`${this.state.targetUrl}/${this.state.currentFile}`, { method: 'DELETE' });                                                
+        await this.handleClickFetch(e);
+        await this.handleClickRemoteFile(newFile)();
+    }    
+
+    private isOriginalSelected() {        
+        return !this.state.currentFile.match(/log_/);
+    }
+
+    private handleClickRemove = async (e: any) => {        
+        if (this.isOriginalSelected()) {
+            if (!confirm(`Reset ${this.state.currentFile}?`)) return;                
+            await fetch(`${this.state.targetUrl}/${this.state.currentFile}`, { method: 'DELETE' });                                                            
+            await this.handleClickRemoteFile(this.state.currentFile)();
+        } else {
+            if (!confirm('Delete file?')) return;            
+            await fetch(`${this.state.targetUrl}/removeFile/${this.state.currentFile}`, { method: 'DELETE' });                                                    
+            await this.handleClickFetch(e);
+        }        
     }    
 
     render() {
@@ -110,8 +126,10 @@ class App extends React.Component {
                             >{file}</button>
                         ))}
                     </div>
-
-                    {this.state.currentFile && !this.state.currentFile.match(/_\d\d_\d\d_\d\d$/) && <div>
+                    {this.state.currentFile && <div>
+                        <button className={this.isOriginalSelected() ? 'remove-original' : 'remove-copied'} onClick={this.handleClickRemove}>{this.isOriginalSelected() ? 'Reset' : 'Remove'}</button>
+                    </div>}
+                    {this.state.currentFile && this.isOriginalSelected() && <div>
                             <form>                                                    
                                 <input style={{ width:'50%' }} placeholder="file name" value={this.state.copyTo} onChange={({ target }) => this.setState({ copyTo: target.value })} />    
                                 <button onClick={this.handleClickMove}>Move</button>
@@ -134,7 +152,7 @@ class App extends React.Component {
                 </div>
             </div>
         );
-    }
+    }    
 }
 
 export default App;
