@@ -10,7 +10,7 @@ app.use((_, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header(
         'Access-Control-Allow-Methods',
-        'GET, POST, PUT, DELETE, OPTIONS',
+        'GET, POST, PUT, DELETE, OPTIONS'
     );
     next();
 });
@@ -27,6 +27,12 @@ app.get('/:filename', (req, res) => {
     res.json({ content });
 });
 
+app.delete('/removeFile/:filename', (req, res) => {
+    const { filename } = req.params;
+    fs.unlinkSync(path.join(ACCESS_LOG_PATH, filename));
+    res.json({ filename });
+});
+
 app.delete('/:filename', (req, res) => {
     const { filename } = req.params;
     fs.truncateSync(path.join(ACCESS_LOG_PATH, filename), 0);
@@ -37,7 +43,7 @@ app.post('/copy/:from/:to', (req, res) => {
     const { from, to } = req.params;
     fs.copyFileSync(
         path.join(ACCESS_LOG_PATH, from),
-        path.join(ACCESS_LOG_PATH, to),
+        path.join(ACCESS_LOG_PATH, to)
     );
     res.json({ from, to });
 });
