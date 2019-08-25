@@ -7,7 +7,6 @@ Type=simple
 ExecStart=bash PROJECT_DIR/run.sh
 ExecReload=/bin/kill -HUP $MAINPID
 WorkingDirectory=PROJECT_DIR/
-KillMode=process
 Restart=always
 User=root
 Group=root
