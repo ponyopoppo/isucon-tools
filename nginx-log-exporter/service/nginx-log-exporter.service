@@ -4,7 +4,7 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-ExecStart=bash PROJECT_DIR/run.sh
+ExecStart=/bin/sh PROJECT_DIR/run.sh
 ExecReload=/bin/kill -HUP $MAINPID
 WorkingDirectory=PROJECT_DIR/
 Restart=always
