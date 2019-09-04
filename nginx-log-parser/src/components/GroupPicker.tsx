@@ -1,32 +1,49 @@
 import * as React from 'react';
-import { GROUP_NAMES } from '../utils/Constants';
+import { GROUP_NAMES, GROUP_PATTERN_NAMES } from '../utils/Constants';
 
 function percentile(rows: DataRow[], percent: number) {
     return (rows[Math.floor((rows.length - 1) * percent)] || {}).request_time;
 }
 
-function aggregateData(originalData: DataRow[], groupNames: string[]) {
-    const agg = {};
-    originalData.forEach((row) => {
-        const key = groupNames.map((name) => {
-            if (name.startsWith('request_uri')) {
-                const num = parseInt(name.split('_')[2]);
-                return row['request_uri'].split('/').slice(0, num + 1).join('/');
-            }
-            return row[name];
-        }).join('###');
+function getDisplayName(row: DataRow, groupName: string, patterns: {[key: string]: string}) {
+    const colName = groupName.startsWith('request_uri') ? 'request_uri' : groupName;
+    const pattern = patterns[colName];    
+    if (pattern) {
+        const patlines = pattern.split('\n')
+            .filter(line => line.trim());            
+        for (let patline of patlines) {
+            try {
+                const re = new RegExp(patline);
+                if ((row[colName] || '').match(re)) {
+                    return patline;
+                }
+            } catch(e) {}
+        }
+        return '.*';
+    }
+    if (colName === 'request_uri') {
+        const num = parseInt(groupName.split('_')[2]);
+        return row['request_uri'].split('/').slice(0, num + 1).join('/');
+    }
+    return row[groupName];
+}
+
+function aggregateData(originalData: DataRow[], groupNames: string[], patterns: {[key: string]: string}) {
+    const agg = {};    
+    originalData.forEach((row) => {        
+        const key = groupNames
+            .map((name) => getDisplayName(row, name, patterns))
+            .join('###');        
         if (!agg[key]) agg[key] = [];
         agg[key].push(row);
     });
+
     return Object.keys(agg).map((key) => {
         const ret: any = {};
-        const rows: DataRow[] = agg[key];
+        const rows: DataRow[] = agg[key];        
         groupNames.forEach((name) => {
-            if (name.startsWith('request_uri')) {
-                const num = parseInt(name.split('_')[2]);
-                ret['request_uri'] = rows[0]['request_uri'].split('/').slice(0, num + 1).join('/');
-            }
-            ret[name] = rows[0][name];
+            const colName = name.startsWith('request_uri') ? 'request_uri' : name;    
+            ret[colName] = getDisplayName(rows[0], name, patterns);            
         });
 
         rows.sort((a, b) => parseFloat(a.request_time) - parseFloat(b.request_time));
@@ -62,6 +79,8 @@ interface Props {
 export default class GroupPicker extends React.Component<Props> {
     state = {
         checked: {},
+        patternChecked: {},
+        patterns: {},
     };
 
     componentWillReceiveProps(nextProps: Props) {
@@ -69,17 +88,47 @@ export default class GroupPicker extends React.Component<Props> {
         this.processData(nextProps);
     }
 
-    handleInputChange = (key: string, value: boolean) => {
-        console.log('handleChange', key, value);
+    handleInputChange = (key: string, value: boolean) => {        
         const stateClone = Object.assign({}, this.state);
         stateClone.checked[key] = value;
         this.setState(stateClone);
         this.processData(this.props);
     }
 
+    handlePatternCheckBoxChange = (key: string, value: boolean) => {
+        this.setState({ patternChecked: {
+            ...this.state.patternChecked,
+            [key]: value,
+        }}, () => {                
+            this.processData(this.props);
+        });        
+    }
+
+    handlePatternChange = (key: string, value: string) => {
+        this.setState({
+            patterns: {
+                ...this.state.patterns,
+                [key]: value,
+            }
+        }, () => {
+            if (this.state.patternChecked[key]) {
+                this.processData(this.props);
+            }            
+        });
+    }
+
     processData = (props: Props) => {
-        const groupNames = Object.keys(this.state.checked).filter(k => this.state.checked[k]);
-        props.onChangeGroup(aggregateData(props.data, groupNames));
+        const groupNames = ([] as string[]).concat(
+            Object.keys(this.state.checked)
+                .filter(k => this.state.checked[k]),
+            Object.keys(this.state.patternChecked)
+                .filter(k => this.state.patternChecked[k])
+        );
+        const patterns = {};
+        Object.keys(this.state.patterns)
+            .filter(pattern => this.state.patternChecked[pattern])
+            .forEach(pattern => patterns[pattern] = this.state.patterns[pattern])
+        props.onChangeGroup(aggregateData(props.data, groupNames, patterns));
     }
 
     render() {
@@ -93,18 +142,43 @@ export default class GroupPicker extends React.Component<Props> {
                         <button onClick={() => GROUP_NAMES.forEach(key => this.handleInputChange(key, true))}>select all</button>
                     }
                 </div>
-                {GROUP_NAMES.map(key => (
-                    <span key={key} style={{ margin: 10 }}>
-                        <input
-                            id={key}
-                            name={key}
-                            type="checkbox"
-                            checked={!!this.state.checked[key]}
-                            onChange={e => this.handleInputChange(key, e.target.checked)}
-                        />
-                        <label htmlFor={key}>{key}</label>
-                    </span>
-                ))}
+                <div>
+                    {GROUP_NAMES.map(key => (
+                        <span key={key} style={{ margin: 10 }}>
+                            <input
+                                id={key}
+                                name={key}
+                                type="checkbox"
+                                checked={!!this.state.checked[key]}
+                                onChange={e => this.handleInputChange(key, e.target.checked)}
+                            />
+                            <label htmlFor={key}>{key}</label>
+                        </span>
+                    ))}
+                </div>
+                <h4>Patterns</h4>
+                <div>
+                    {GROUP_PATTERN_NAMES.map(key => (
+                        <div key={key} style={{ margin: 10, display: 'inline-block', width: '30%' }}>                        
+                            <input                            
+                                id={`pattern-${key}`}
+                                name={key}
+                                type="checkbox"
+                                checked={!!this.state.patternChecked[key]}
+                                onChange={e => this.handlePatternCheckBoxChange(key, e.target.checked)}
+                            />
+                            <label htmlFor={`pattern-${key}`}>{key}</label>    
+                            <div>
+                                <textarea                                
+                                    style={{ width: '100%', height: 40 }}
+                                    name={key}                                                
+                                    value={this.state.patterns[key]}
+                                    onChange={e => this.handlePatternChange(key, e.target.value)}
+                                />   
+                            </div>                 
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }
