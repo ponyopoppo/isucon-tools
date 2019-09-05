@@ -13,13 +13,17 @@ function getDisplayName(row: DataRow, groupName: string, patterns: {[key: string
             .filter(line => line.trim());            
         for (let patline of patlines) {
             try {
-                const re = new RegExp(patline);
+                const pat = patline
+                    .split('/')
+                    .map(v => v.startsWith(':') ? '[^/]*' : v)
+                    .join('/');
+                const re = new RegExp(`^${pat}$`);
                 if ((row[colName] || '').match(re)) {
-                    return patline;
+                    return '[P] ' + patline;
                 }
             } catch(e) {}
         }
-        return '.*';
+        return row[colName];
     }
     if (colName === 'request_uri') {
         const num = parseInt(groupName.split('_')[2]);
