@@ -16,12 +16,7 @@ export const DATA_ROW_KEYS = [
     'max',
 ];
 
-export const SHORT_KEYS = [
-    'request_method',
-    'request_status',
-    'count',
-    'sum',
-];
+export const SHORT_KEYS = ['request_method', 'request_status', 'count', 'sum'];
 
 export const GROUP_NAMES = [
     'id',
@@ -31,6 +26,13 @@ export const GROUP_NAMES = [
     'request_uri_2',
     'request_uri_3',
     'request_uri_4',
+    'request_uri_100',
+    'request_query',
+    'request_body',
+];
+
+export const GROUP_PATTERN_NAMES = [
+    'request_uri',
     'request_query',
     'request_body',
 ];
