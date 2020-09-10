@@ -1,6 +1,8 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
+import compression from 'compression';
+
 const app = express();
 
 // const ACCESS_LOG_PATH = '/usr/local/Cellar/nginx/1.17.3/logs';
@@ -14,6 +16,8 @@ app.use((_, res, next) => {
     );
     next();
 });
+
+app.use(compression() as any);
 
 app.get('/', (req, res) => {
     const files = fs.readdirSync(ACCESS_LOG_PATH);

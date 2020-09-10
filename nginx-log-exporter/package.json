@@ -7,7 +7,9 @@
     "start": "ts-node index.ts"
   },
   "dependencies": {
+    "@types/compression": "^1.7.0",
     "@types/express": "^4.17.1",
+    "compression": "^1.7.4",
     "express": "^4.17.1",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.3"
