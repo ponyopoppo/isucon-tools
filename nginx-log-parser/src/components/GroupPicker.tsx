@@ -95,7 +95,8 @@ export default class GroupPicker extends React.Component<Props> {
     handleInputChange = (key: string, value: boolean) => {
         const stateClone = Object.assign({}, this.state);
         if (key.startsWith('request_uri')) {
-            for (const requestUriKey of Object.keys(stateClone.checked)) {
+            const keys = Object.keys(stateClone.checked).filter(k => k.startsWith('request_uri'));
+            for (const requestUriKey of keys) {
                 stateClone.checked[requestUriKey] = false;
             }
         }
