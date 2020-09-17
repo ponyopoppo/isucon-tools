@@ -15,7 +15,7 @@ export class FilterInput extends React.Component<Props> {
         this.processData(nextProps);
     }
 
-    handleInputChange = (key: string, value: string) => {
+    private handleInputChange = (key: string, value: string) => {
         const stateClone = Object.assign({}, this.state);
         stateClone.filters[key] = value;
         try {
@@ -27,20 +27,40 @@ export class FilterInput extends React.Component<Props> {
         this.processData(this.props);
     }
 
-    processData = (props: Props) => {
+    private processData = (props: Props) => {
         const filteredData = props.data
             .filter(row => FILTER_NAMES
                 .every(name => !this.state.regexs[name] || row[name].match(this.state.regexs[name])));
         props.onChangeFilter(filteredData);
     }
 
+    private getTextInputBackgroundColor(key: string) {
+        if (this.state.filters[key] && !this.state.regexs[key]) return '#f88';
+        if (this.state.filters[key]) return '#3273F6';
+        return '#fff';
+    }
+
+    private getTextInputColor(key: string) {
+        if (this.state.filters[key]) return '#fff';
+        return '#000';
+    }
+
     render() {
         return (
             <div>
-                {FILTER_NAMES.map(key => (<input key={key} style={{
-                    backgroundColor: this.state.filters[key] && !this.state.regexs[key] ? '#f88' : '#fff',
-                    margin: 10,
-                }} name={key} placeholder={key} type="text" value={this.state.filters[key] || ''} onChange={e => this.handleInputChange(key, e.target.value)} />))}
+                {FILTER_NAMES.map(key => (
+                    <div style={{ display: 'inline-block', margin: 10 }}>
+                        <div>{key}</div>
+                        <input
+                            key={key}
+                            style={{ backgroundColor: this.getTextInputBackgroundColor(key), color: this.getTextInputColor(key) }}
+                            name={key}
+                            type="text"
+                            value={this.state.filters[key] || ''}
+                            onChange={e => this.handleInputChange(key, e.target.value)}
+                        />
+                    </div>)
+                )}
             </div>
         );
     }
