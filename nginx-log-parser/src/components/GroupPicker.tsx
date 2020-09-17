@@ -5,12 +5,12 @@ function percentile(rows: DataRow[], percent: number) {
     return (rows[Math.floor((rows.length - 1) * percent)] || {}).request_time;
 }
 
-function getDisplayName(row: DataRow, groupName: string, patterns: {[key: string]: string}) {
+function getDisplayName(row: DataRow, groupName: string, patterns: { [key: string]: string }) {
     const colName = groupName.startsWith('request_uri') ? 'request_uri' : groupName;
-    const pattern = patterns[colName];    
+    const pattern = patterns[colName];
     if (pattern) {
         const patlines = pattern.split('\n')
-            .filter(line => line.trim());            
+            .filter(line => line.trim());
         for (let patline of patlines) {
             try {
                 const pat = patline
@@ -21,7 +21,7 @@ function getDisplayName(row: DataRow, groupName: string, patterns: {[key: string
                 if ((row[colName] || '').match(re)) {
                     return '[P] ' + patline;
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
         return row[colName];
     }
@@ -32,22 +32,22 @@ function getDisplayName(row: DataRow, groupName: string, patterns: {[key: string
     return row[groupName];
 }
 
-function aggregateData(originalData: DataRow[], groupNames: string[], patterns: {[key: string]: string}) {
-    const agg = {};    
-    originalData.forEach((row) => {        
+function aggregateData(originalData: DataRow[], groupNames: string[], patterns: { [key: string]: string }) {
+    const agg = {};
+    originalData.forEach((row) => {
         const key = groupNames
             .map((name) => getDisplayName(row, name, patterns))
-            .join('###');        
+            .join('###');
         if (!agg[key]) agg[key] = [];
         agg[key].push(row);
     });
 
     return Object.keys(agg).map((key) => {
         const ret: any = {};
-        const rows: DataRow[] = agg[key];        
+        const rows: DataRow[] = agg[key];
         groupNames.forEach((name) => {
-            const colName = name.startsWith('request_uri') ? 'request_uri' : name;    
-            ret[colName] = getDisplayName(rows[0], name, patterns);            
+            const colName = name.startsWith('request_uri') ? 'request_uri' : name;
+            ret[colName] = getDisplayName(rows[0], name, patterns);
         });
 
         rows.sort((a, b) => parseFloat(a.request_time) - parseFloat(b.request_time));
@@ -92,7 +92,7 @@ export default class GroupPicker extends React.Component<Props> {
         this.processData(nextProps);
     }
 
-    handleInputChange = (key: string, value: boolean) => {        
+    handleInputChange = (key: string, value: boolean) => {
         const stateClone = Object.assign({}, this.state);
         stateClone.checked[key] = value;
         this.setState(stateClone);
@@ -100,12 +100,14 @@ export default class GroupPicker extends React.Component<Props> {
     }
 
     handlePatternCheckBoxChange = (key: string, value: boolean) => {
-        this.setState({ patternChecked: {
-            ...this.state.patternChecked,
-            [key]: value,
-        }}, () => {                
+        this.setState({
+            patternChecked: {
+                ...this.state.patternChecked,
+                [key]: value,
+            }
+        }, () => {
             this.processData(this.props);
-        });        
+        });
     }
 
     handlePatternChange = (key: string, value: string) => {
@@ -117,7 +119,7 @@ export default class GroupPicker extends React.Component<Props> {
         }, () => {
             if (this.state.patternChecked[key]) {
                 this.processData(this.props);
-            }            
+            }
         });
     }
 
@@ -163,23 +165,23 @@ export default class GroupPicker extends React.Component<Props> {
                 <h4>Patterns</h4>
                 <div>
                     {GROUP_PATTERN_NAMES.map(key => (
-                        <div key={key} style={{ margin: 10, display: 'inline-block', width: '30%' }}>                        
-                            <input                            
+                        <div key={key} style={{ margin: 10, display: 'inline-block', width: '30%' }}>
+                            <input
                                 id={`pattern-${key}`}
                                 name={key}
                                 type="checkbox"
                                 checked={!!this.state.patternChecked[key]}
                                 onChange={e => this.handlePatternCheckBoxChange(key, e.target.checked)}
                             />
-                            <label htmlFor={`pattern-${key}`}>{key}</label>    
+                            <label htmlFor={`pattern-${key}`}>{key}</label>
                             <div>
-                                <textarea                                
+                                <textarea
                                     style={{ width: '100%', height: 40 }}
-                                    name={key}                                                
+                                    name={key}
                                     value={this.state.patterns[key]}
                                     onChange={e => this.handlePatternChange(key, e.target.value)}
-                                />   
-                            </div>                 
+                                />
+                            </div>
                         </div>
                     ))}
                 </div>

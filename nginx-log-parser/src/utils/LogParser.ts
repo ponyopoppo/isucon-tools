@@ -21,7 +21,6 @@ export async function readText(
 }
 
 export async function parse(text: string): Promise<DataRow[]> {
-    console.log({ text });
     const rows = text
         .split('\n')
         .filter(row => row)
