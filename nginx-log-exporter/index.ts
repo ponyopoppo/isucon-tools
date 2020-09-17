@@ -2,10 +2,10 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import compression from 'compression';
+import prettyBytes from 'pretty-bytes';
 
 const app = express();
 
-// const ACCESS_LOG_PATH = '/usr/local/Cellar/nginx/1.17.3/logs';
 const ACCESS_LOG_PATH = '/var/log/nginx';
 
 app.use((_, res, next) => {
@@ -20,8 +20,13 @@ app.use((_, res, next) => {
 app.use(compression() as any);
 
 app.get('/', (req, res) => {
-    const files = fs.readdirSync(ACCESS_LOG_PATH);
-    res.json({ files });
+    const logPath = req.query.path || ACCESS_LOG_PATH;
+    const files = fs.readdirSync(logPath);
+    const sizes: { [file: string]: string } = {};
+    for (const file of files) {
+        sizes[file] = prettyBytes(fs.statSync(path.join(logPath, file)).size);
+    }
+    res.json({ files, sizes });
 });
 
 app.get('/:filename', (req, res) => {
