@@ -32,6 +32,17 @@ class App extends React.Component {
         }
     }
 
+    private getTragetUrl() {
+        let { targetUrl } = this.state;
+        if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+            targetUrl = 'http://' + targetUrl;
+        }
+        if (!targetUrl.match(/\:[0-9]+/)) {
+            targetUrl += ':13030';
+        }
+        return targetUrl;
+    }
+
     private async renewData(text: string) {
         const data: DataRow[] = await parse(text);
         const totalTime = data.reduce((pre, cur) => pre + parseFloat(cur.request_time), 0);
@@ -54,25 +65,27 @@ class App extends React.Component {
         const newurl = window.location.protocol + "//" +
             window.location.host +
             window.location.pathname +
-            '?' + 'url=' + encodeURIComponent(this.state.targetUrl);
+            '?' + 'url=' + encodeURIComponent(this.getTragetUrl());
         window.history.pushState({ path: newurl }, '', newurl);
     }
 
     private handleClickRemoteFile = (file: string) => async () => {
         console.log({ file });
-        const { content } = await fetch(this.state.targetUrl + '/' + file).then(res => res.json());
+        const { content } = await fetch(this.getTragetUrl() + '/' + file).then(res => res.json());
         this.setState({ currentFile: file, copyTo: `${file}_${moment().format('HH_mm_ss')}` });
         await this.renewData(content);
     }
 
     private async fetchFileList() {
-        const { files } = await fetch(this.state.targetUrl).then(res => res.json());
+        this.setState({ files: [] });
+        const { files } = await fetch(this.getTragetUrl()).then(res => res.json());
         this.setState({ files });
     }
 
     private handleClickFetch = async (e: any) => {
         e.preventDefault();
         this.setUrlQuery();
+        this.setState({ targetUrl: this.getTragetUrl() })
         await this.fetchFileList();
     }
 
@@ -81,10 +94,10 @@ class App extends React.Component {
         const score = prompt('スコアは？');
         if (!score) return;
         const newFile = this.state.copyTo + '__' + score;
-        await fetch(`${this.state.targetUrl}/copy/${this.state.currentFile}/${newFile}`, {
+        await fetch(`${this.getTragetUrl()}/copy/${this.state.currentFile}/${newFile}`, {
             method: 'POST'
         });
-        await fetch(`${this.state.targetUrl}/${this.state.currentFile}`, { method: 'DELETE' });
+        await fetch(`${this.getTragetUrl()}/${this.state.currentFile}`, { method: 'DELETE' });
         await this.handleClickFetch(e);
         await this.handleClickRemoteFile(newFile)();
     }
@@ -96,11 +109,11 @@ class App extends React.Component {
     private handleClickRemove = async (e: any) => {
         if (this.isOriginalSelected()) {
             if (!confirm(`Reset ${this.state.currentFile}?`)) return;
-            await fetch(`${this.state.targetUrl}/${this.state.currentFile}`, { method: 'DELETE' });
+            await fetch(`${this.getTragetUrl()}/${this.state.currentFile}`, { method: 'DELETE' });
             await this.handleClickRemoteFile(this.state.currentFile)();
         } else {
             if (!confirm('Delete file?')) return;
-            await fetch(`${this.state.targetUrl}/removeFile/${this.state.currentFile}`, { method: 'DELETE' });
+            await fetch(`${this.getTragetUrl()}/removeFile/${this.state.currentFile}`, { method: 'DELETE' });
             await this.handleClickFetch(e);
         }
     }
