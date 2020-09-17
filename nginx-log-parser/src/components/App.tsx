@@ -20,6 +20,7 @@ class App extends React.Component {
         totalTime: 0,
         targetUrl: '',
         files: [],
+        sizes: {},
         currentFile: '',
         copyTo: '',
     };
@@ -77,9 +78,9 @@ class App extends React.Component {
     }
 
     private async fetchFileList() {
-        this.setState({ files: [] });
-        const { files } = await fetch(this.getTragetUrl()).then(res => res.json());
-        this.setState({ files });
+        this.setState({ files: [], sizes: {} });
+        const { files, sizes } = await fetch(this.getTragetUrl()).then(res => res.json());
+        this.setState({ files, sizes });
     }
 
     private handleClickFetch = async (e: any) => {
@@ -136,7 +137,7 @@ class App extends React.Component {
                                 onClick={this.handleClickRemoteFile(file)}
                                 className={file === this.state.currentFile ? 'selected-file-button' : 'file-button'}
                                 key={file}
-                            >{file}</button>
+                            >{file} ({this.state.sizes[file]})</button>
                         ))}
                     </div>
                     {this.state.currentFile && <div>
