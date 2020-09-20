@@ -23,17 +23,26 @@ app.get('/', (req, res) => {
     const logPath = req.query.path || ACCESS_LOG_PATH;
     const files = fs.readdirSync(logPath);
     const sizes: { [file: string]: string } = {};
+    const times: { [file: string]: Date } = {};
     for (const file of files) {
-        sizes[file] = prettyBytes(fs.statSync(path.join(logPath, file)).size);
+        const stat = fs.statSync(path.join(logPath, file));
+        sizes[file] = prettyBytes(stat.size);
+        times[file] = stat.birthtime;
     }
-    res.json({ files, sizes });
+    res.json({ files, sizes, times });
 });
 
 app.get('/:filename', (req, res) => {
     const { filename } = req.params;
-    const buffer = fs.readFileSync(path.join(ACCESS_LOG_PATH, filename));
+    const logPath = req.query.path || ACCESS_LOG_PATH;
+    const buffer = fs.readFileSync(path.join(logPath, filename));
     const content = buffer.toString('utf-8');
-    res.json({ content });
+    if (req.query.html) {
+        res.header('Content-Type', 'text/html');
+        res.send(content);
+    } else {
+        res.json({ content });
+    }
 });
 
 app.delete('/removeFile/:filename', (req, res) => {
