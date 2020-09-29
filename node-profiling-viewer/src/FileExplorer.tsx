@@ -17,6 +17,10 @@ function is0x(file: string) {
   return file.endsWith('.0x');
 }
 
+function isMySql(file: string) {
+  return file.endsWith('.mysql.log');
+}
+
 async function getFiles(url: string, path: string) {
   const { files, times } = await fetch(
     `${url}?path=${path}`
@@ -59,6 +63,10 @@ function NodeProfViewer() {
       window.open(`${targetUrl}/flamegraph.html?html=1&path=${path}/${file}#{"merged":false,"nodeId":null,"excludeTypes":["init"]}`, "_blank");
       return;
     }
+    if (isMySql(file)) {
+      window.open(`/mysql?url=${encodeURIComponent(targetUrl)}&path=${encodeURIComponent(`${path}/${file}`)}`);
+      return;
+    }
     const newPath = `${path}/${file}`;
     setPath(newPath, { method: 'push' });
     fetchFileList(targetUrl, newPath);
@@ -86,7 +94,7 @@ function NodeProfViewer() {
           {files.map((file) => (
             <tr key={file}>
               <td>
-                <a className={is0x(file) ? 'link0x' : ''} href="#" onClick={(e) => {
+                <a className={is0x(file) || isMySql(file) ? 'link0x' : ''} href="#" onClick={(e) => {
                   e.preventDefault();
                   handleClickFile(file)
                 }}>
