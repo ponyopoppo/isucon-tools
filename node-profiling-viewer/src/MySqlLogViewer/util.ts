@@ -10,6 +10,7 @@ export interface SeriesData {
     fillColor: string;
     query: string;
     connectionId: number;
+    args?: string;
 }
 
 export interface LogEntry {
@@ -19,4 +20,5 @@ export interface LogEntry {
     query: string;
     isFailed?: boolean;
     isTransaction?: boolean;
+    args?: string;
 }

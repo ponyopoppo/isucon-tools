@@ -49,6 +49,14 @@ const APEX_OPTIONS = {
   },
 };
 
+function getColor(log: LogEntry) {
+  if (log.isFailed) return '#fa8231';
+  if (log.isTransaction) return '#26de81';
+  if (log.query === 'COMMIT') return '#fed330';
+  if (log.query === 'ROLLBACK') return '#eb3b5a';
+  return '#4b7bec';
+}
+
 export default function TimelineChart({ onSelect, start, end, originalEntries, laneNum, skip, limit }: Props) {
   const [logEntries, setLogEngties] = useState<LogEntry[]>([]);
   const [key, setKey] = useState(0);
@@ -69,9 +77,10 @@ export default function TimelineChart({ onSelect, start, end, originalEntries, l
           log.start,
           log.end,
         ],
-        fillColor: log.isFailed ? '#ff0000' : log.isTransaction ? '#ff8800' : '#08f8f8',
+        fillColor: getColor(log),
         query: log.query,
         connectionId: log.connectionId,
+        args: log.args,
       }))
   }], [logEntries, laneNum]);
 
@@ -88,8 +97,8 @@ export default function TimelineChart({ onSelect, start, end, originalEntries, l
     title: {
       formatter: (_value: any, { seriesIndex, dataPointIndex }: any) => {
         const data = series[seriesIndex].data[dataPointIndex];
-        if (data.query.length < 50) return data.query;
-        return data.query.slice(0, 50) + '...';
+        if (data.query.length < 200) return data.query;
+        return data.query.slice(0, 200) + '...';
       }
     },
   };

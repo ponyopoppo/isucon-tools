@@ -25,10 +25,10 @@ export default function MySqlLogViewer() {
       let { url, path } = queryString.parse(window.location.search.replace(/^\?/, ''));
       const pathAry = (path as string).split('/');
       url = decodeURIComponent(url as string);
-      const { content } = await fetch(
+      const { content }: { content: string } = await fetch(
         `${url}/${pathAry[pathAry.length - 1]}?path=${pathAry.slice(0, pathAry.length - 1).join('/')}`
       ).then((res) => res.json());
-      setOriginalEntries(content.split('\n').map((line: string) => JSON.parse(line)))
+      setOriginalEntries(content.split('\n').filter((line) => line).map((line) => JSON.parse(line)))
     })();
   }, []);
 
@@ -46,9 +46,15 @@ export default function MySqlLogViewer() {
       originalEntries={originalEntries}
       laneNum={laneNum}
     />
-    {selectedData && <samp>
-      {selectedData.query}
-    </samp>}
+    {selectedData && <>
+      <div>
+        <samp>{selectedData.query}</samp>
+      </div>
+      <div>
+        {selectedData.args && <samp><pre>{JSON.stringify(JSON.parse(selectedData.args), null, 2)}</pre></samp>}
+      </div>
+    </>}
+
     <div>
       <label>Lane num</label>
       <input type="number" onChange={(e) => setLaneNum(parseInt(e.target.value))} value={laneNum} />
