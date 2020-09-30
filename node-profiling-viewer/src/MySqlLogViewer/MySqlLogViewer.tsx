@@ -8,17 +8,11 @@ import queryString from 'querystring';
 export default function MySqlLogViewer() {
   const [originalEntries, setOriginalEntries] = useState<LogEntry[] | null>(null);
   const [selectedData, setSelectedData] = useState<SeriesData | null>(null);
-  const [start, setStart] = useQueryState<number>('start', 0);
-  const [end, setEnd] = useQueryState<number>('end', 0);
   const [skip, setSkip] = useQueryState<number>('skip', 0);
-  const [limit, setLimit] = useQueryState<number>('limit', 200);
-  const [laneNum, setLaneNum] = useQueryState<number>('lastNum', 10);
+  const [limit, setLimit] = useQueryState<number>('limit', 500);
+  const [laneNum, setLaneNum] = useQueryState<number>('lastNum', 20);
+  const [filter, setFilter] = useQueryState<string>('filter', '');
 
-  useEffect(() => {
-    if (!originalEntries) return;
-    setStart(originalEntries[0]?.start);
-    setEnd(originalEntries[originalEntries.length - 1]?.end);
-  }, [originalEntries]);
 
   useEffect(() => {
     (async () => {
@@ -28,7 +22,7 @@ export default function MySqlLogViewer() {
       const { content }: { content: string } = await fetch(
         `${url}/${pathAry[pathAry.length - 1]}?path=${pathAry.slice(0, pathAry.length - 1).join('/')}`
       ).then((res) => res.json());
-      setOriginalEntries(content.split('\n').filter((line) => line).map((line) => JSON.parse(line)))
+      setOriginalEntries(content.split('\n').filter((line) => line).map((line, i) => ({ ...JSON.parse(line), pos: i })))
     })();
   }, []);
 
@@ -38,13 +32,12 @@ export default function MySqlLogViewer() {
 
   return (<div>
     <TimelineChart
-      start={start}
-      end={end}
       skip={skip}
       limit={limit}
       onSelect={setSelectedData}
       originalEntries={originalEntries}
       laneNum={laneNum}
+      filter={filter}
     />
     {selectedData && <>
       <div>
@@ -60,18 +53,10 @@ export default function MySqlLogViewer() {
       <input type="number" onChange={(e) => setLaneNum(parseInt(e.target.value))} value={laneNum} />
     </div>
     <div>
-      <div className="inline-block">
-        <label>From</label>
-        <input type="number" onChange={(e) => setStart(parseInt(e.target.value))} value={start} />
-      </div>
-      <div className="inline-block">
-        <label>To</label>
-        <input type="number" onChange={(e) => setEnd(parseInt(e.target.value))} value={end} />
-      </div>
       {selectedData && <div>
         <div>
-          <button onClick={() => setStart(selectedData.y[0])}>From = {selectedData.y[0]}</button>
-          <button onClick={() => setEnd(selectedData.y[1])}>To = {selectedData.y[1]}</button>
+          <button onClick={() => setSkip(selectedData.pos)}>skip = {selectedData.pos}</button>
+          <button onClick={() => setLimit(selectedData.pos - skip)}>limit = {selectedData.pos - skip}</button>
         </div>
       </div>}
     </div>
@@ -88,6 +73,10 @@ export default function MySqlLogViewer() {
         <label>Limit</label>
         <input type="number" onChange={(e) => setLimit(parseInt(e.target.value))} value={limit} />
       </div>
+    </div>
+    <div>
+      <label>Filter</label>
+      <input onChange={(e) => setFilter(e.target.value)} value={filter} />
     </div>
     <button onClick={() => {
       window.location.hash = '#'

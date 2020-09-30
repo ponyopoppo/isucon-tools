@@ -11,6 +11,7 @@ export interface SeriesData {
     query: string;
     connectionId: number;
     args?: string;
+    pos: number;
 }
 
 export interface LogEntry {
@@ -21,4 +22,5 @@ export interface LogEntry {
     isFailed?: boolean;
     isTransaction?: boolean;
     args?: string;
+    pos: number;
 }

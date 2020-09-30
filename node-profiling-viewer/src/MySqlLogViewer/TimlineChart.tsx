@@ -3,13 +3,12 @@ import ReactApexChart from 'react-apexcharts';
 import { formatDate, LogEntry, SeriesData } from './util';
 
 interface Props {
-  start: number;
-  end: number;
   onSelect: (data: SeriesData) => void;
   originalEntries: LogEntry[];
   laneNum: number;
   skip: number;
   limit: number;
+  filter: string;
 }
 
 const APEX_OPTIONS = {
@@ -57,17 +56,17 @@ function getColor(log: LogEntry) {
   return '#4b7bec';
 }
 
-export default function TimelineChart({ onSelect, start, end, originalEntries, laneNum, skip, limit }: Props) {
+export default function TimelineChart({ onSelect, originalEntries, laneNum, skip, limit, filter }: Props) {
   const [logEntries, setLogEngties] = useState<LogEntry[]>([]);
   const [key, setKey] = useState(0);
 
   useEffect(() => {
     setLogEngties(originalEntries
-      .filter(log => log.start >= start && log.end <= end)
       .slice(skip, limit + skip)
-      .sort((a, b) => (a.connectionId % laneNum) - (b.connectionId % laneNum)));
+      .sort((a, b) => (a.connectionId % laneNum) - (b.connectionId % laneNum))
+      .filter(log => !filter || log.query.includes(filter)))
     setKey(Math.random())
-  }, [start, end, skip, limit, originalEntries, laneNum]);
+  }, [skip, limit, originalEntries, laneNum, filter]);
 
   const series: [{ data: SeriesData[] }] = useMemo(() => [{
     data: logEntries
@@ -81,6 +80,7 @@ export default function TimelineChart({ onSelect, start, end, originalEntries, l
         query: log.query,
         connectionId: log.connectionId,
         args: log.args,
+        pos: log.pos,
       }))
   }], [logEntries, laneNum]);
 
