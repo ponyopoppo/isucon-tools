@@ -2,9 +2,12 @@ import { FILTER_NAMES } from '../utils/Constants';
 import { Props } from './App';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
 
 export function FilterInput({ onChangeFilter, data }: Props) {
-    const [filters, setFilters] = useState<{ [key: string]: string }>({});
+    const [filters, setFilters] = useLocalStorageState<{
+        [key: string]: string;
+    }>('filters', {});
     const [regexs, setRegexs] = useState<{ [key: string]: RegExp | null }>({});
     const [shouleProcessData, setShouldProcessData] = useState(false);
 
@@ -17,20 +20,22 @@ export function FilterInput({ onChangeFilter, data }: Props) {
         processData();
     }, [shouleProcessData]);
 
-    const handleInputChange = (key: string, value: string) => {
-        let newRegExp: RegExp | null = null;
-        try {
-            newRegExp = new RegExp(value);
-        } catch (_) {
-            newRegExp = null;
+    useEffect(() => {
+        const regexs: { [key: string]: RegExp | null } = {};
+        for (const key of Object.keys(filters)) {
+            try {
+                regexs[key] = new RegExp(filters[key]);
+            } catch (_) {
+                regexs[key] = null;
+            }
         }
+        setRegexs(regexs);
+    }, [filters]);
+
+    const handleInputChange = (key: string, value: string) => {
         setFilters({
             ...filters,
             [key]: value,
-        });
-        setRegexs({
-            ...regexs,
-            [key]: newRegExp,
         });
         setShouldProcessData(true);
     };
@@ -59,7 +64,7 @@ export function FilterInput({ onChangeFilter, data }: Props) {
     return (
         <div>
             {FILTER_NAMES.map((key) => (
-                <div style={{ display: 'inline-block', margin: 10 }}>
+                <div key={key} style={{ display: 'inline-block', margin: 10 }}>
                     <div>{key}</div>
                     <input
                         key={key}

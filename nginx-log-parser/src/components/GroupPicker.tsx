@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import { GROUP_NAMES, GROUP_PATTERN_NAMES } from '../utils/Constants';
 
 function percentile(rows: DataRow[], percent: number) {
@@ -102,11 +103,15 @@ interface Props {
 }
 
 export default function GroupPicker({ onChangeGroup, data }: Props) {
-    const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
-    const [patternChecked, setPatternChecked] = useState<{
+    const [checked, setChecked] = useLocalStorageState<{
         [key: string]: boolean;
-    }>({});
-    const [patterns, setPatterns] = useState<{ [key: string]: string }>({});
+    }>('groupChecked', {});
+    const [patternChecked, setPatternChecked] = useLocalStorageState<{
+        [key: string]: boolean;
+    }>('patternChecked', {});
+    const [patterns, setPatterns] = useLocalStorageState<{
+        [key: string]: string;
+    }>('patterns', {});
     const [shouldProcessData, setShouldProcessData] = useState(true);
 
     useEffect(() => {
@@ -173,11 +178,11 @@ export default function GroupPicker({ onChangeGroup, data }: Props) {
             Object.keys(checked).filter((k) => checked[k]),
             Object.keys(patternChecked).filter((k) => patternChecked[k])
         );
-        const patterns = {};
+        const newPatterns = {};
         Object.keys(patterns)
             .filter((pattern) => patternChecked[pattern])
-            .forEach((pattern) => (patterns[pattern] = patterns[pattern]));
-        onChangeGroup(aggregateData(data, groupNames, patterns));
+            .forEach((pattern) => (newPatterns[pattern] = patterns[pattern]));
+        onChangeGroup(aggregateData(data, groupNames, newPatterns));
         setShouldProcessData(false);
     };
 
