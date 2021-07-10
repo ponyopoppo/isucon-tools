@@ -1,77 +1,79 @@
 import { FILTER_NAMES } from '../utils/Constants';
 import { Props } from './App';
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 
-export class FilterInput extends React.Component<Props> {
-    state = {
-        filters: {},
-        regexs: {},
-    };
+export function FilterInput({ onChangeFilter, data }: Props) {
+    const [filters, setFilters] = useState<{ [key: string]: string }>({});
+    const [regexs, setRegexs] = useState<{ [key: string]: RegExp | null }>({});
+    const [shouleProcessData, setShouldProcessData] = useState(false);
 
-    componentWillReceiveProps(nextProps: Props) {
-        if (this.props.data === nextProps.data) {
-            return;
-        }
-        this.processData(nextProps);
-    }
+    useEffect(() => {
+        processData();
+    }, [data]);
 
-    private handleInputChange = (key: string, value: string) => {
-        const stateClone = Object.assign({}, this.state);
-        stateClone.filters[key] = value;
+    useEffect(() => {
+        if (!shouleProcessData) return;
+        processData();
+    }, [shouleProcessData]);
+
+    const handleInputChange = (key: string, value: string) => {
+        let newRegExp: RegExp | null = null;
         try {
-            stateClone.regexs[key] = new RegExp(value);
+            newRegExp = new RegExp(value);
         } catch (_) {
-            stateClone.regexs[key] = null;
+            newRegExp = null;
         }
-        this.setState(stateClone);
-        this.processData(this.props);
+        setFilters({
+            ...filters,
+            [key]: value,
+        });
+        setRegexs({
+            ...regexs,
+            [key]: newRegExp,
+        });
+        setShouldProcessData(true);
     };
 
-    private processData = (props: Props) => {
-        const filteredData = props.data.filter((row) =>
+    const processData = () => {
+        const filteredData = data.filter((row) =>
             FILTER_NAMES.every(
-                (name) =>
-                    !this.state.regexs[name] ||
-                    row[name].match(this.state.regexs[name])
+                (name) => !regexs[name] || row[name].match(regexs[name])
             )
         );
-        props.onChangeFilter(filteredData);
+        onChangeFilter(filteredData);
+        setShouldProcessData(false);
     };
 
-    private getTextInputBackgroundColor(key: string) {
-        if (this.state.filters[key] && !this.state.regexs[key]) return '#f88';
-        if (this.state.filters[key]) return '#3273F6';
+    const getTextInputBackgroundColor = (key: string) => {
+        if (filters[key] && !regexs[key]) return '#f88';
+        if (filters[key]) return '#3273F6';
         return '#fff';
-    }
+    };
 
-    private getTextInputColor(key: string) {
-        if (this.state.filters[key]) return '#fff';
+    const getTextInputColor = (key: string) => {
+        if (filters[key]) return '#fff';
         return '#000';
-    }
+    };
 
-    render() {
-        return (
-            <div>
-                {FILTER_NAMES.map((key) => (
-                    <div style={{ display: 'inline-block', margin: 10 }}>
-                        <div>{key}</div>
-                        <input
-                            key={key}
-                            style={{
-                                backgroundColor:
-                                    this.getTextInputBackgroundColor(key),
-                                color: this.getTextInputColor(key),
-                            }}
-                            name={key}
-                            type="text"
-                            value={this.state.filters[key] || ''}
-                            onChange={(e) =>
-                                this.handleInputChange(key, e.target.value)
-                            }
-                        />
-                    </div>
-                ))}
-            </div>
-        );
-    }
+    return (
+        <div>
+            {FILTER_NAMES.map((key) => (
+                <div style={{ display: 'inline-block', margin: 10 }}>
+                    <div>{key}</div>
+                    <input
+                        key={key}
+                        style={{
+                            backgroundColor: getTextInputBackgroundColor(key),
+                            color: getTextInputColor(key),
+                        }}
+                        name={key}
+                        type="text"
+                        value={filters[key] || ''}
+                        onChange={(e) => handleInputChange(key, e.target.value)}
+                    />
+                </div>
+            ))}
+        </div>
+    );
 }
