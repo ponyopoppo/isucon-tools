@@ -1,172 +1,205 @@
-import * as React from 'react';
-import * as queryString from 'query-string';
 import * as moment from 'moment';
 import { parse, readText } from '../utils/LogParser';
 import GroupPicker from './GroupPicker';
 import Table from './Table';
 import { FilterInput } from './FilterInput';
 import './App.css';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
+import { useQueryState } from 'use-location-state';
 
 export interface Props {
     data: DataRow[];
     onChangeFilter: (data: DataRow[]) => void;
 }
 
-class App extends React.Component {
-    state = {
-        originalData: [],
-        filteredData: [],
-        groupedData: [],
-        totalTime: 0,
-        targetUrl: '',
-        files: [],
-        sizes: {},
-        currentFile: '',
-        copyTo: '',
-    };
+function App() {
+    const [targetUrl, setTargetUrl] = useQueryState<string>('targetUrl', '');
+    const [totalTime, setTotalTime] = useState(0);
+    const [originalData, setOriginalData] = useState<DataRow[]>([]);
+    const [filteredData, setFilteredData] = useState<DataRow[]>([]);
+    const [groupedData, setGroupedData] = useState<DataRow[]>([]);
+    const [files, setFiles] = useState<string[]>([]);
+    const [sizes, setSizes] = useState<any>({});
+    const [currentFile, setCurrentFile] = useState<string>('');
+    const [copyTo, setCopyTo] = useState<string>('');
 
-    componentDidMount() {
-        const query = queryString.parse(window.location.search);
-        if (query && typeof query.url === 'string') {
-            const targetUrl = decodeURIComponent(query.url);
-            this.setState({ targetUrl }, () => this.fetchFileList());
+    useEffect(() => {
+        if (targetUrl) {
+            fetchFileList();
         }
-    }
+    }, []);
 
-    private getTragetUrl() {
-        let { targetUrl } = this.state;
-        if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-            targetUrl = 'http://' + targetUrl;
+    const getTargetUrl = () => {
+        let url = targetUrl;
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'http://' + url;
         }
         if (!targetUrl.match(/\:[0-9]+/)) {
-            targetUrl += ':13030';
+            url += ':13030';
         }
-        return targetUrl;
-    }
+        return url;
+    };
 
-    private async renewData(text: string) {
+    const renewData = async (text: string) => {
         const data: DataRow[] = await parse(text);
-        const totalTime = data.reduce((pre, cur) => pre + parseFloat(cur.request_time), 0);
-        this.setState({ totalTime, originalData: data });
-    }
+        const totalTime = data.reduce(
+            (pre, cur) => pre + parseFloat(cur.request_time),
+            0
+        );
+        setTotalTime(totalTime);
+        setOriginalData(data);
+    };
 
-    private changeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        await this.renewData(await readText(e));
-    }
+    const changeFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        await renewData(await readText(e));
+    };
 
-    private changeFilter = (data: DataRow[]) => {
-        this.setState({ filteredData: data });
-    }
+    const changeFilter = (data: DataRow[]) => {
+        setFilteredData(data);
+    };
 
-    private changeGroup = (data: DataRow[]) => {
-        this.setState({ groupedData: data });
-    }
+    const changeGroup = (data: DataRow[]) => {
+        setGroupedData(data);
+    };
 
-    private setUrlQuery() {
-        const newurl = window.location.protocol + "//" +
-            window.location.host +
-            window.location.pathname +
-            '?' + 'url=' + encodeURIComponent(this.getTragetUrl());
-        window.history.pushState({ path: newurl }, '', newurl);
-    }
+    const handleClickRemoteFile = (file: string) => async () => {
+        const { content } = await fetch(getTargetUrl() + '/' + file).then(
+            (res) => res.json()
+        );
+        setCurrentFile(file);
+        setCopyTo(`${file}_${moment().format('HH_mm_ss')}`);
+        await renewData(content);
+    };
 
-    private handleClickRemoteFile = (file: string) => async () => {
-        console.log({ file });
-        const { content } = await fetch(this.getTragetUrl() + '/' + file).then(res => res.json());
-        this.setState({ currentFile: file, copyTo: `${file}_${moment().format('HH_mm_ss')}` });
-        await this.renewData(content);
-    }
+    const fetchFileList = async () => {
+        setFiles([]);
+        setSizes({});
+        const { files, sizes } = await fetch(getTargetUrl()).then((res) =>
+            res.json()
+        );
+        setFiles(files);
+        setSizes(sizes);
+    };
 
-    private async fetchFileList() {
-        this.setState({ files: [], sizes: {} });
-        const { files, sizes } = await fetch(this.getTragetUrl()).then(res => res.json());
-        this.setState({ files, sizes });
-    }
-
-    private handleClickFetch = async (e: any) => {
+    const handleClickFetch = async (e: any) => {
         e.preventDefault();
-        this.setUrlQuery();
-        this.setState({ targetUrl: this.getTragetUrl() })
-        await this.fetchFileList();
-    }
+        setTargetUrl(getTargetUrl());
+        await fetchFileList();
+    };
 
-    private handleClickMove = async (e: any) => {
+    const handleClickMove = async (e: any) => {
         e.preventDefault();
         const score = prompt('スコアは？');
         if (!score) return;
-        const newFile = this.state.copyTo + '__' + score;
-        await fetch(`${this.getTragetUrl()}/copy/${this.state.currentFile}/${newFile}`, {
-            method: 'POST'
+        const newFile = copyTo + '__' + score;
+        await fetch(`${getTargetUrl()}/copy/${currentFile}/${newFile}`, {
+            method: 'POST',
         });
-        await fetch(`${this.getTragetUrl()}/${this.state.currentFile}`, { method: 'DELETE' });
-        await this.handleClickFetch(e);
-        await this.handleClickRemoteFile(newFile)();
-    }
+        await fetch(`${getTargetUrl()}/${currentFile}`, { method: 'DELETE' });
+        await handleClickFetch(e);
+        await handleClickRemoteFile(newFile)();
+    };
 
-    private isOriginalSelected() {
-        return !this.state.currentFile.match(/log_/);
-    }
+    const isOriginalSelected = () => {
+        return !currentFile.match(/log_/);
+    };
 
-    private handleClickRemove = async (e: any) => {
-        if (this.isOriginalSelected()) {
-            if (!confirm(`Reset ${this.state.currentFile}?`)) return;
-            await fetch(`${this.getTragetUrl()}/${this.state.currentFile}`, { method: 'DELETE' });
-            await this.handleClickRemoteFile(this.state.currentFile)();
+    const handleClickRemove = async (e: any) => {
+        if (isOriginalSelected()) {
+            if (!confirm(`Reset ${currentFile}?`)) return;
+            await fetch(`${getTargetUrl()}/${currentFile}`, {
+                method: 'DELETE',
+            });
+            await handleClickRemoteFile(currentFile)();
         } else {
             if (!confirm('Delete file?')) return;
-            await fetch(`${this.getTragetUrl()}/removeFile/${this.state.currentFile}`, { method: 'DELETE' });
-            await this.handleClickFetch(e);
+            await fetch(`${getTargetUrl()}/removeFile/${currentFile}`, {
+                method: 'DELETE',
+            });
+            await handleClickFetch(e);
         }
-    }
+    };
 
-    render() {
-        return (
-            <div className="App" style={{ padding: 10 }}>
+    return (
+        <div className="App" style={{ padding: 10 }}>
+            <div>
+                <h3>File</h3>
                 <div>
-                    <h3>File</h3>
+                    <input type="file" onChange={(e) => changeFile(e)} />
+                </div>
+                <form className="fetch-form" onSubmit={handleClickFetch}>
+                    <input
+                        className="fetch-field"
+                        placeholder="remote url(:13030)"
+                        value={targetUrl}
+                        onChange={({ target }) => setTargetUrl(target.value)}
+                    />
+                    <button className="fetch-button">Get file list</button>
+                </form>
+                <div>
+                    {files.map((file) => (
+                        <button
+                            onClick={handleClickRemoteFile(file)}
+                            className={
+                                file === currentFile
+                                    ? 'selected-file-button'
+                                    : 'file-button'
+                            }
+                            key={file}
+                        >
+                            {file} ({sizes[file]})
+                        </button>
+                    ))}
+                </div>
+                {currentFile && (
                     <div>
-                        <input type="file" onChange={e => this.changeFile(e)} />
+                        <button
+                            className={
+                                isOriginalSelected()
+                                    ? 'remove-original'
+                                    : 'remove-copied'
+                            }
+                            onClick={handleClickRemove}
+                        >
+                            {isOriginalSelected() ? 'Reset' : 'Remove'}
+                        </button>
                     </div>
-                    <form className="fetch-form" onSubmit={this.handleClickFetch}>
-                        <input className="fetch-field" placeholder="remote url(:13030)" value={this.state.targetUrl} onChange={({ target }) => this.setState({ targetUrl: target.value })} />
-                        <button className="fetch-button">Get file list</button>
-                    </form>
+                )}
+                {currentFile && isOriginalSelected() && (
                     <div>
-                        {this.state.files.map(file => (
-                            <button
-                                onClick={this.handleClickRemoteFile(file)}
-                                className={file === this.state.currentFile ? 'selected-file-button' : 'file-button'}
-                                key={file}
-                            >{file} ({this.state.sizes[file]})</button>
-                        ))}
-                    </div>
-                    {this.state.currentFile && <div>
-                        <button className={this.isOriginalSelected() ? 'remove-original' : 'remove-copied'} onClick={this.handleClickRemove}>{this.isOriginalSelected() ? 'Reset' : 'Remove'}</button>
-                    </div>}
-                    {this.state.currentFile && this.isOriginalSelected() && <div>
                         <form>
-                            <input style={{ width: '50%' }} placeholder="file name" value={this.state.copyTo} onChange={({ target }) => this.setState({ copyTo: target.value })} />
-                            <button onClick={this.handleClickMove}>Move</button>
+                            <input
+                                style={{ width: '50%' }}
+                                placeholder="file name"
+                                value={copyTo}
+                                onChange={({ target }) =>
+                                    setCopyTo(target.value)
+                                }
+                            />
+                            <button onClick={handleClickMove}>Move</button>
                         </form>
                     </div>
-                    }
-                    <p>Total time: {this.state.totalTime}</p>
-                </div>
-                <div>
-                    <h3>Filter</h3>
-                    <FilterInput data={this.state.originalData} onChangeFilter={this.changeFilter} />
-                </div>
-                <div>
-                    <h3>Group</h3>
-                    <GroupPicker data={this.state.filteredData} onChangeGroup={this.changeGroup} />
-                </div>
-                <div>
-                    <h3>Table</h3>
-                    <Table data={this.state.groupedData} />
-                </div>
+                )}
+                <p>Total time: {totalTime}</p>
             </div>
-        );
-    }
+            <div>
+                <h3>Filter</h3>
+                <FilterInput
+                    data={originalData}
+                    onChangeFilter={changeFilter}
+                />
+            </div>
+            <div>
+                <h3>Group</h3>
+                <GroupPicker data={filteredData} onChangeGroup={changeGroup} />
+            </div>
+            <div>
+                <h3>Table</h3>
+                <Table data={groupedData} />
+            </div>
+        </div>
+    );
 }
 
 export default App;

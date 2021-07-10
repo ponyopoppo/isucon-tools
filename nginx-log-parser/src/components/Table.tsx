@@ -7,17 +7,15 @@ interface Props {
     data: DataRow[];
 }
 
-export default class Table extends React.Component<Props> {
-    render() {
-        return (
-            <ReactTable
-                data={this.props.data}
-                columns={DATA_ROW_KEYS.map(key => ({
-                    Header: key,
-                    accessor: key,
-                    width: SHORT_KEYS.indexOf(key) >= 0 ? 80 : undefined,
-                }))}
-            />
-        );
-    }
+export default function Table({ data }: Props) {
+    return (
+        <ReactTable
+            data={data}
+            columns={DATA_ROW_KEYS.map((key) => ({
+                Header: key,
+                accessor: key,
+                width: SHORT_KEYS.indexOf(key) >= 0 ? 80 : undefined,
+            }))}
+        />
+    );
 }

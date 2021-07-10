@@ -25,14 +25,18 @@ export class FilterInput extends React.Component<Props> {
         }
         this.setState(stateClone);
         this.processData(this.props);
-    }
+    };
 
     private processData = (props: Props) => {
-        const filteredData = props.data
-            .filter(row => FILTER_NAMES
-                .every(name => !this.state.regexs[name] || row[name].match(this.state.regexs[name])));
+        const filteredData = props.data.filter((row) =>
+            FILTER_NAMES.every(
+                (name) =>
+                    !this.state.regexs[name] ||
+                    row[name].match(this.state.regexs[name])
+            )
+        );
         props.onChangeFilter(filteredData);
-    }
+    };
 
     private getTextInputBackgroundColor(key: string) {
         if (this.state.filters[key] && !this.state.regexs[key]) return '#f88';
@@ -48,19 +52,25 @@ export class FilterInput extends React.Component<Props> {
     render() {
         return (
             <div>
-                {FILTER_NAMES.map(key => (
+                {FILTER_NAMES.map((key) => (
                     <div style={{ display: 'inline-block', margin: 10 }}>
                         <div>{key}</div>
                         <input
                             key={key}
-                            style={{ backgroundColor: this.getTextInputBackgroundColor(key), color: this.getTextInputColor(key) }}
+                            style={{
+                                backgroundColor:
+                                    this.getTextInputBackgroundColor(key),
+                                color: this.getTextInputColor(key),
+                            }}
                             name={key}
                             type="text"
                             value={this.state.filters[key] || ''}
-                            onChange={e => this.handleInputChange(key, e.target.value)}
+                            onChange={(e) =>
+                                this.handleInputChange(key, e.target.value)
+                            }
                         />
-                    </div>)
-                )}
+                    </div>
+                ))}
             </div>
         );
     }
