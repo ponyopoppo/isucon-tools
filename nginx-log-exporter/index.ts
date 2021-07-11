@@ -6,7 +6,7 @@ import prettyBytes from 'pretty-bytes';
 
 const app = express();
 
-const ACCESS_LOG_PATH = '/var/log/envoy';
+const ACCESS_LOG_PATH = '/var/log/nginx';
 
 app.use((_, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
