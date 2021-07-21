@@ -69,7 +69,7 @@ function App() {
             `${getTargetUrl()}/${file}?path=${path}`
         ).then((res) => res.json());
         setCurrentFile(file);
-        setCopyTo(`${file}_${moment().format('HH_mm_ss')}`);
+        setCopyTo(`${file}_${moment().format('YYYY_MM_DD_HH_mm_ss')}`);
         await renewData(content);
     };
 
@@ -94,10 +94,15 @@ function App() {
         const score = prompt('スコアは？');
         if (!score) return;
         const newFile = copyTo + '__' + score;
-        await fetch(`${getTargetUrl()}/copy/${currentFile}/${newFile}`, {
-            method: 'POST',
+        await fetch(
+            `${getTargetUrl()}/copy/${currentFile}/${newFile}?path=${path}`,
+            {
+                method: 'POST',
+            }
+        );
+        await fetch(`${getTargetUrl()}/${currentFile}?path=${path}`, {
+            method: 'DELETE',
         });
-        await fetch(`${getTargetUrl()}/${currentFile}`, { method: 'DELETE' });
         await handleClickFetch(e);
         await handleClickRemoteFile(newFile)();
     };
@@ -109,15 +114,18 @@ function App() {
     const handleClickRemove = async (e: any) => {
         if (isOriginalSelected()) {
             if (!confirm(`Reset ${currentFile}?`)) return;
-            await fetch(`${getTargetUrl()}/${currentFile}`, {
+            await fetch(`${getTargetUrl()}/${currentFile}?path=${path}`, {
                 method: 'DELETE',
             });
             await handleClickRemoteFile(currentFile)();
         } else {
             if (!confirm('Delete file?')) return;
-            await fetch(`${getTargetUrl()}/removeFile/${currentFile}`, {
-                method: 'DELETE',
-            });
+            await fetch(
+                `${getTargetUrl()}/removeFile/${currentFile}?path=${path}`,
+                {
+                    method: 'DELETE',
+                }
+            );
             await handleClickFetch(e);
         }
     };

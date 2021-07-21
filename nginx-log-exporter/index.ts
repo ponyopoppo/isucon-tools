@@ -47,22 +47,22 @@ app.get('/:filename', (req, res) => {
 
 app.delete('/removeFile/:filename', (req, res) => {
     const { filename } = req.params;
-    fs.unlinkSync(path.join(ACCESS_LOG_PATH, filename));
+    const logPath = req.query.path || ACCESS_LOG_PATH;
+    fs.unlinkSync(path.join(logPath, filename));
     res.json({ filename });
 });
 
 app.delete('/:filename', (req, res) => {
     const { filename } = req.params;
-    fs.truncateSync(path.join(ACCESS_LOG_PATH, filename), 0);
+    const logPath = req.query.path || ACCESS_LOG_PATH;
+    fs.truncateSync(path.join(logPath, filename), 0);
     res.json({ filename });
 });
 
 app.post('/copy/:from/:to', (req, res) => {
     const { from, to } = req.params;
-    fs.copyFileSync(
-        path.join(ACCESS_LOG_PATH, from),
-        path.join(ACCESS_LOG_PATH, to)
-    );
+    const logPath = req.query.path || ACCESS_LOG_PATH;
+    fs.copyFileSync(path.join(logPath, from), path.join(logPath, to));
     res.json({ from, to });
 });
 
