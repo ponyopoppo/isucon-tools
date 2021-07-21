@@ -23,6 +23,7 @@ function App() {
     const [sizes, setSizes] = useState<any>({});
     const [currentFile, setCurrentFile] = useState<string>('');
     const [copyTo, setCopyTo] = useState<string>('');
+    const [path, setPath] = useQueryState<string>('path', '');
 
     useEffect(() => {
         if (targetUrl) {
@@ -64,9 +65,9 @@ function App() {
     };
 
     const handleClickRemoteFile = (file: string) => async () => {
-        const { content } = await fetch(getTargetUrl() + '/' + file).then(
-            (res) => res.json()
-        );
+        const { content } = await fetch(
+            `${getTargetUrl()}/${file}?path=${path}`
+        ).then((res) => res.json());
         setCurrentFile(file);
         setCopyTo(`${file}_${moment().format('HH_mm_ss')}`);
         await renewData(content);
@@ -75,9 +76,9 @@ function App() {
     const fetchFileList = async () => {
         setFiles([]);
         setSizes({});
-        const { files, sizes } = await fetch(getTargetUrl()).then((res) =>
-            res.json()
-        );
+        const { files, sizes } = await fetch(
+            `${getTargetUrl()}?path=${path}`
+        ).then((res) => res.json());
         setFiles(files);
         setSizes(sizes);
     };
@@ -134,6 +135,12 @@ function App() {
                         placeholder="remote url(:13030)"
                         value={targetUrl}
                         onChange={({ target }) => setTargetUrl(target.value)}
+                    />
+                    <input
+                        className="fetch-field"
+                        placeholder="/var/log/nginx"
+                        value={path}
+                        onChange={({ target }) => setPath(target.value)}
                     />
                     <button className="fetch-button">Get file list</button>
                 </form>
