@@ -30,6 +30,7 @@ export function FilterInput({ onChangeFilter, data }: Props) {
             }
         }
         setRegexs(regexs);
+        setShouldProcessData(true);
     }, [filters]);
 
     const handleInputChange = (key: string, value: string) => {
@@ -37,7 +38,6 @@ export function FilterInput({ onChangeFilter, data }: Props) {
             ...filters,
             [key]: value,
         });
-        setShouldProcessData(true);
     };
 
     const processData = () => {
