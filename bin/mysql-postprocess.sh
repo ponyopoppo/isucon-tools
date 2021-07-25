@@ -9,8 +9,14 @@ if [ -z "$DISCORD_WEBHOOK_URL" ]; then
     exit 1
 fi
 
+sudo ls /var/log/mysql/mysql-slow.log > /dev/null
+if [ $? -ne 0 ]; then
+    echo "There is no such file: /var/log/mysql/mysql-slow.log"
+    exit 1
+fi
+
 now=$(date "+%Y%m%d-%H%M%S")
-tmp_local_file=mysqlslow-$now-$server_id.txt
+tmp_local_file=mysqlslow-$now-$1-$server_id.txt
 
 cat <<EOF > $tmp_local_file
 $(sudo mysqldumpslow /var/log/mysql/mysql-slow.log -s t)
@@ -19,4 +25,4 @@ EOF
 curl -X POST -F "file=@${tmp_local_file}" ${DISCORD_WEBHOOK_URL}
 rm $tmp_local_file
 sudo mv /var/log/mysql/mysql-slow.log "/var/log/mysql/mysql-slow-${now}.log"
-sudo systemctl restart
+sudo systemctl restart mysql
