@@ -65,7 +65,7 @@ install_ts_node () {
 }
 
 install_nginx () {
-    nginx -v
+    nginx -v ||	echo 'nginx is not installed'
     read -p "If nginx version < 1.13.10, you should install newer nginx. Install nginx? (y/N): " yn
     case "$yn" in
 	      [yY]*) echo Installing;;
