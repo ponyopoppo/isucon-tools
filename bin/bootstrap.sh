@@ -41,7 +41,7 @@ install_netdata () {
 }
 
 install_node_js () {
-    node -v || echo 'node is not installed'
+    sudo node -v || echo 'node is not installed'
     read -p "Install node 12? (y/N): " yn
     case "$yn" in
         [yY]*) echo Installing;;
@@ -55,7 +55,7 @@ install_node_js () {
 }
 
 install_ts_node () {
-    ts-node -v || echo 'ts-node is not installed'
+    sudo ts-node -v || echo 'ts-node is not installed'
     read -p "Install ts-node? (y/N): " yn
     case "$yn" in
         [yY]*) echo Installing;;
