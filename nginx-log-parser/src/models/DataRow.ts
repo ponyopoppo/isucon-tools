@@ -1,4 +1,5 @@
 interface DataRow {
+    time: string;
     id: number;
     position: number;
     session_id: string;

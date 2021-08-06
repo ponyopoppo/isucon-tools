@@ -6,6 +6,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import FileManager from './FileManager';
 import UserFlow from './UserFlow';
+import BarChart from './BarChat';
 
 export interface Props {
     data: DataRow[];
@@ -14,6 +15,7 @@ export interface Props {
 
 function App() {
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
+    const [inTimeData, setInTimeData] = useState<DataRow[]>([]);
     const [filteredData, setFilteredData] = useState<DataRow[]>([]);
     const [groupedData, setGroupedData] =
         useState<{
@@ -29,9 +31,13 @@ function App() {
         <div className="App" style={{ padding: 10 }}>
             <FileManager onChangeData={setOriginalData} />
             <div>
+                <h3>Select time range</h3>
+                <BarChart data={originalData} onChangeData={setInTimeData} />
+            </div>
+            <div>
                 <h3>Filter</h3>
                 <FilterInput
-                    data={originalData}
+                    data={inTimeData}
                     onChangeFilter={setFilteredData}
                 />
             </div>
@@ -53,7 +59,7 @@ function App() {
                 <label htmlFor="userflowshown">show</label>
                 {groupedData && userFlowShown && (
                     <UserFlow
-                        originalData={originalData}
+                        originalData={inTimeData}
                         groupedData={groupedData}
                     />
                 )}
