@@ -5,6 +5,7 @@ import './App.css';
 import * as React from 'react';
 import { useState } from 'react';
 import FileManager from './FileManager';
+import UserFlow from './UserFlow';
 
 export interface Props {
     data: DataRow[];
@@ -14,15 +15,13 @@ export interface Props {
 function App() {
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
     const [filteredData, setFilteredData] = useState<DataRow[]>([]);
-    const [groupedData, setGroupedData] = useState<DataRow[]>([]);
-
-    const changeFilter = (data: DataRow[]) => {
-        setFilteredData(data);
-    };
-
-    const changeGroup = (data: DataRow[]) => {
-        setGroupedData(data);
-    };
+    const [groupedData, setGroupedData] = useState<{
+        data: DataRow[];
+        groupNames: string[];
+        patterns: {
+            [key: string]: string;
+        };
+    } | null>(null);
 
     return (
         <div className="App" style={{ padding: 10 }}>
@@ -31,16 +30,28 @@ function App() {
                 <h3>Filter</h3>
                 <FilterInput
                     data={originalData}
-                    onChangeFilter={changeFilter}
+                    onChangeFilter={setFilteredData}
                 />
             </div>
             <div>
                 <h3>Group</h3>
-                <GroupPicker data={filteredData} onChangeGroup={changeGroup} />
+                <GroupPicker
+                    data={filteredData}
+                    onChangeGroup={setGroupedData}
+                />
+            </div>
+            <div>
+                <h3>User flow</h3>
+                {groupedData && (
+                    <UserFlow
+                        originalData={originalData}
+                        groupedData={groupedData}
+                    />
+                )}
             </div>
             <div>
                 <h3>Table</h3>
-                <Table data={groupedData} />
+                <Table data={groupedData?.data || []} />
             </div>
         </div>
     );
