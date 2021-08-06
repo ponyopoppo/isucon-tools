@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "ts-node -T index.ts"
   },
   "dependencies": {
     "@types/compression": "^1.7.0",

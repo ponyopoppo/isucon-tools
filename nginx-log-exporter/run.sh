@@ -1,2 +1,2 @@
-sudo yarn
-sudo yarn start
+sudo npm i
+sudo npm start
