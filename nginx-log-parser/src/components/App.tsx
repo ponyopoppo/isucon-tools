@@ -15,13 +15,15 @@ export interface Props {
 function App() {
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
     const [filteredData, setFilteredData] = useState<DataRow[]>([]);
-    const [groupedData, setGroupedData] = useState<{
-        data: DataRow[];
-        groupNames: string[];
-        patterns: {
-            [key: string]: string;
-        };
-    } | null>(null);
+    const [groupedData, setGroupedData] =
+        useState<{
+            data: DataRow[];
+            groupNames: string[];
+            patterns: {
+                [key: string]: string;
+            };
+        } | null>(null);
+    const [userFlowShown, setUserFlowShown] = useState(false);
 
     return (
         <div className="App" style={{ padding: 10 }}>
@@ -42,7 +44,14 @@ function App() {
             </div>
             <div>
                 <h3>User flow</h3>
-                {groupedData && (
+                <input
+                    id="userflowshown"
+                    type="checkbox"
+                    onChange={(e) => setUserFlowShown(e.target.checked)}
+                    checked={userFlowShown}
+                />
+                <label htmlFor="userflowshown">show</label>
+                {groupedData && userFlowShown && (
                     <UserFlow
                         originalData={originalData}
                         groupedData={groupedData}

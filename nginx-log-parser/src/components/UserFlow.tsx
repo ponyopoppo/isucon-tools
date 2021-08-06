@@ -136,7 +136,6 @@ export default function UserFlow({ originalData, groupedData }: Props) {
                 </button>
             </div>
             <Sankey
-                animation
                 margin={50}
                 nodes={sankeyNodes}
                 links={sankeyEdges}
