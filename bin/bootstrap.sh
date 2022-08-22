@@ -32,6 +32,13 @@ install_apt_packages() {
     sudo apt-get install dstat iperf git htop vim emacs iftop -y
 }
 
+install_pt_query_digest() {
+    # https://nishinatoshiharu.com/percona-slowquerylog/#pt-query-digest
+    wget https://downloads.percona.com/downloads/percona-toolkit/3.3.1/binary/debian/bionic/x86_64/percona-toolkit_3.3.1-1.bionic_amd64.deb
+    sudo apt-get install -y libdbd-mysql-perl libdbi-perl libio-socket-ssl-perl libnet-ssleay-perl libterm-readkey-perl && sudo dpkg -i percona-toolkit_3.3.1-1.bionic_amd64.deb
+    rm percona-toolkit_3.3.1-1.bionic_amd64.deb
+}
+
 install_netdata() {
     yes "" | bash <(curl -Ss https://my-netdata.io/kickstart.sh)
     echo '(define-key key-translation-map (kbd "C-h") (kbd "<DEL>"))' >~/.emacs
@@ -104,6 +111,7 @@ run_nginx_log_exporter() {
 enter_repo_name
 configure_ps1
 install_apt_packages
+install_pt_query_digest
 install_netdata
 install_node_js
 install_ts_node
