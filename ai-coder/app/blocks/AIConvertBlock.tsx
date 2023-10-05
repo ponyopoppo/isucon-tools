@@ -19,6 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { AIConvertStep, Step } from '../types';
 import HighlightedCode from '../HighlightedCode/HighlightedCode';
+import PromptManager from '../PromptManager/PromptManager';
 interface Props {
     step: AIConvertStep;
     onChange: (step: AIConvertStep | ((step: Step) => Step)) => void;
@@ -71,6 +72,7 @@ export default function AIConvertBlock({
 }: Props) {
     const prevStepCodes = getStepCodes(steps[index - 1]);
     const [loading, setLoading] = useState(false);
+    const [isPromptManagerOpen, setIsPromptManagerOpen] = useState(false);
     const handlePressConvert = async () => {
         try {
             setLoading(true);
@@ -141,7 +143,7 @@ export default function AIConvertBlock({
             ...step,
             prompt: {
                 ...step.prompt,
-                history: [...step.prompt.history].splice(i, 1),
+                history: step.prompt.history.filter((_, j) => j !== i),
             },
         });
     };
@@ -153,7 +155,10 @@ export default function AIConvertBlock({
                 history: [
                     ...step.prompt.history,
                     {
-                        type: 'user',
+                        type:
+                            step.prompt.history.length % 2
+                                ? 'assistant'
+                                : 'user',
                         text: '',
                     },
                 ],
@@ -185,6 +190,24 @@ export default function AIConvertBlock({
                     />
                     <TabPanels>
                         <TabPanel>
+                            <PromptManager
+                                isOpen={isPromptManagerOpen}
+                                onClose={() => setIsPromptManagerOpen(false)}
+                                onClickUse={(prompt) => {
+                                    onChange({
+                                        ...step,
+                                        prompt,
+                                    });
+                                    setIsPromptManagerOpen(false);
+                                }}
+                                currentPrompt={step.prompt}
+                            />
+                            <Button
+                                size="sm"
+                                onClick={() => setIsPromptManagerOpen(true)}
+                            >
+                                Templates
+                            </Button>
                             <Flex gap="2">
                                 <Box flex="1">
                                     <Heading size="md" mb="4">
