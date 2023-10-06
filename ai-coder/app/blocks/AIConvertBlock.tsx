@@ -6,6 +6,7 @@ import {
     Card,
     CardBody,
     CardHeader,
+    Checkbox,
     Flex,
     Heading,
     Select,
@@ -15,11 +16,14 @@ import {
     TabPanel,
     TabPanels,
     Tabs,
+    Text,
     Textarea,
 } from '@chakra-ui/react';
 import { AIConvertStep, Step } from '../types';
 import HighlightedCode from '../HighlightedCode/HighlightedCode';
 import PromptManager from '../PromptManager/PromptManager';
+import _ from 'lodash';
+
 interface Props {
     step: AIConvertStep;
     onChange: (step: AIConvertStep | ((step: Step) => Step)) => void;
@@ -32,7 +36,9 @@ function getStepCodes(step: Step): string[] {
         return [step.code];
     }
     if (step.type === 'split' || step.type === 'ai-convert') {
-        return step.codes.map((code) => code.text);
+        return step.codes
+            .filter((code) => !code.ignored)
+            .map((code) => code.text);
     }
     return [];
 }
@@ -80,34 +86,33 @@ export default function AIConvertBlock({
                 ...step,
                 codes: prevStepCodes.map(() => ({ text: '' })),
             });
-            for (
-                let codeIndex = 0;
-                codeIndex < prevStepCodes.length;
-                codeIndex++
-            ) {
-                const reader = await fetchAIConvert(
-                    step.prompt,
-                    prevStepCodes[codeIndex]
-                );
-                let combinedValue = '';
-                while (true) {
-                    const { value, done } = (await reader.read()) ?? {};
-                    if (value) {
-                        combinedValue += value;
-                    }
-                    onChange((step) => {
-                        if (step.type !== 'ai-convert') {
-                            return step;
+
+            await Promise.all(
+                _.range(0, prevStepCodes.length).map(async (codeIndex) => {
+                    const reader = await fetchAIConvert(
+                        step.prompt,
+                        prevStepCodes[codeIndex]
+                    );
+                    let combinedValue = '';
+                    while (true) {
+                        const { value, done } = (await reader.read()) ?? {};
+                        if (value) {
+                            combinedValue += value;
                         }
-                        const codes = [...step.codes];
-                        codes[codeIndex] = { text: combinedValue };
-                        return { ...step, codes };
-                    });
-                    if (done) {
-                        break;
+                        onChange((step) => {
+                            if (step.type !== 'ai-convert') {
+                                return step;
+                            }
+                            const codes = [...step.codes];
+                            codes[codeIndex] = { text: combinedValue };
+                            return { ...step, codes };
+                        });
+                        if (done) {
+                            break;
+                        }
                     }
-                }
-            }
+                })
+            );
         } finally {
             setLoading(false);
         }
@@ -287,7 +292,35 @@ export default function AIConvertBlock({
                                 {step.codes.map((code, i) => (
                                     <Box key={i} maxW="50vw">
                                         <Heading size="sm">
-                                            {i} / {step.codes.length}
+                                            <Flex justifyContent="space-between">
+                                                <Text>
+                                                    {i} / {step.codes.length}
+                                                </Text>
+                                                <Flex gap="1">
+                                                    <Checkbox
+                                                        isChecked={
+                                                            code.ignored ??
+                                                            false
+                                                        }
+                                                        onChange={(e) => {
+                                                            const newCodes = [
+                                                                ...step.codes,
+                                                            ];
+                                                            newCodes[i] = {
+                                                                ...newCodes[i],
+                                                                ignored:
+                                                                    e.target
+                                                                        .checked,
+                                                            };
+                                                            onChange({
+                                                                ...step,
+                                                                codes: newCodes,
+                                                            });
+                                                        }}
+                                                    />
+                                                    Ignore
+                                                </Flex>
+                                            </Flex>
                                         </Heading>
                                         <HighlightedCode
                                             code={code.text}

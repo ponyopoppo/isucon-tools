@@ -10,7 +10,7 @@ import {
     FormLabel,
     Heading,
     Input,
-    Textarea,
+    Text,
 } from '@chakra-ui/react';
 import { InputStep, MergeStep, SplitStep, Step } from '../types';
 import { splitCode } from '../utils/splitCode';
@@ -128,7 +128,30 @@ export default function SplitBlock({
                     {step.codes.map((code, i) => (
                         <Box key={i} maxW="50vw">
                             <Heading size="sm">
-                                {i} / {step.codes.length}
+                                <Flex justifyContent="space-between">
+                                    <Text>
+                                        {i} / {step.codes.length}
+                                    </Text>
+                                    <Flex gap="1">
+                                        <Checkbox
+                                            isChecked={code.ignored ?? false}
+                                            onChange={(e) => {
+                                                const newCodes = [
+                                                    ...step.codes,
+                                                ];
+                                                newCodes[i] = {
+                                                    ...newCodes[i],
+                                                    ignored: e.target.checked,
+                                                };
+                                                onChange({
+                                                    ...step,
+                                                    codes: newCodes,
+                                                });
+                                            }}
+                                        />
+                                        Ignore
+                                    </Flex>
+                                </Flex>
                             </Heading>
                             <HighlightedCode code={code.text} />
                         </Box>

@@ -66,6 +66,7 @@ export default function MergeBlock({
         }
 
         const replaces = splitStep.codes
+            .filter((code) => !code.ignored)
             .map((code, i) => ({
                 start: code.start,
                 end: code.end,
