@@ -1,0 +1,18 @@
+{
+  "name": "bun-scripts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "extract-path": "bun run extract-path.ts"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "openai": "^4.11.1"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/node": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest"
+  }
+}

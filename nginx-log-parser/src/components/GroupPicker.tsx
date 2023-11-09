@@ -197,6 +197,9 @@ export default function GroupPicker({ onChangeGroup, data }: Props) {
                 ))}
             </div>
             <h4>Patterns</h4>
+            <span style={{ backgroundColor: '#eee' }}>
+                bun run bun-scripts/extract-path.ts $FILENAME
+            </span>
             <div>
                 {GROUP_PATTERN_NAMES.map((key) => (
                     <div

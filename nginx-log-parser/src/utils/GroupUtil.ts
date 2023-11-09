@@ -1,3 +1,7 @@
+import { pathToRegexp } from 'path-to-regexp';
+
+const regexpCache: { [key: string]: RegExp } = {};
+
 export function getDisplayName(
     row: DataRow,
     groupName: string,
@@ -11,13 +15,22 @@ export function getDisplayName(
         const patlines = pattern.split('\n').filter((line) => line.trim());
         for (let patline of patlines) {
             try {
-                const pat = patline
-                    .split('/')
-                    .map((v) => (v.startsWith(':') ? '[^/]*' : v))
-                    .join('/');
-                const re = new RegExp(`^${pat}$`);
-                if ((row[colName] || '').match(re)) {
-                    return '[P] ' + patline;
+                if (colName === 'request_uri') {
+                    const regExp =
+                        regexpCache[patline] ??
+                        (regexpCache[patline] = pathToRegexp(patline));
+                    if (regExp.test(row[colName] || '')) {
+                        return '[P] ' + patline;
+                    }
+                } else {
+                    const pat = patline
+                        .split('/')
+                        .map((v) => (v.startsWith(':') ? '[^/]*' : v))
+                        .join('/');
+                    const re = new RegExp(`^${pat}$`);
+                    if ((row[colName] || '').match(re)) {
+                        return '[P] ' + patline;
+                    }
                 }
             } catch (e) {}
         }
