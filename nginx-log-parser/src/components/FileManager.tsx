@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 import { parse, readText } from '../utils/LogParser';
 import './App.css';
 import * as React from 'react';
@@ -53,7 +53,9 @@ export default function FileManager({
             `${getTargetUrl()}/${file}?path=${path}`
         ).then((res) => res.json());
         setCurrentFile(file);
-        setCopyTo(`${file}_${moment().format('YYYY_MM_DD_HH_mm_ss')}`);
+        setCopyTo(
+            `${file}_${moment().tz('Asia/Tokyo').format('YYYY_MM_DD_HH_mm_ss')}`
+        );
         await renewData(content);
     };
 
