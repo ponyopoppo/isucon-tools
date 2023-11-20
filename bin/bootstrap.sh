@@ -27,6 +27,11 @@ configure_ps1() {
     echo PS1=$tmp >>~/.bashrc
 }
 
+configure_editors() {
+    echo '(define-key key-translation-map (kbd "C-h") (kbd "<DEL>"))' >~/.emacs
+    echo set expandtab shiftwidth=4 softtabstop=4 number wrap title wildmenu ruler >~/.vimrc
+}
+
 install_apt_packages() {
     sudo apt-get update -y
     sudo apt-get install dstat iperf git htop vim emacs iftop -y
@@ -41,7 +46,6 @@ install_pt_query_digest() {
 
 install_netdata() {
     yes "" | bash <(curl -Ss https://my-netdata.io/kickstart.sh)
-    echo '(define-key key-translation-map (kbd "C-h") (kbd "<DEL>"))' >~/.emacs
 }
 
 install_node_js() {
@@ -113,6 +117,7 @@ run_nginx_log_exporter() {
 
 enter_repo_name
 configure_ps1
+configure_editors
 install_apt_packages
 install_pt_query_digest
 install_netdata
