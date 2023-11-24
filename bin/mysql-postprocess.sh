@@ -40,6 +40,6 @@ EOF
     sudo mv /var/log/mysql/mysql-slow.log "/var/log/mysql/mysql-slow-${now}.log"
 fi
 
-sudo mv ~/webapp/etc/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf
+sudo cp ~/webapp/etc/mysqld.cnf /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo chmod 644 /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo systemctl restart mysql
