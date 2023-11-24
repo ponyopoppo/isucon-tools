@@ -3,7 +3,7 @@
 set -xe
 
 enter_repo_name() {
-    DEFAULT_REPO_NAME=isucon11-qual
+    DEFAULT_REPO_NAME=isucon13
     read -p "Enter repository name (default: $DEFAULT_REPO_NAME):" REPO_NAME
     if [ -z "$REPO_NAME" ]; then
         REPO_NAME=$DEFAULT_REPO_NAME
@@ -90,7 +90,7 @@ install_nginx() {
 setup_ssh_key() {
     ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
     cat ~/.ssh/id_rsa.pub
-    read -p "Register this key at https://github.com/ponyopoppo/${REPO_NAME}/settings/keys/new and press enter:"
+    read -p "Register this key at https://github.com/fccpc/${REPO_NAME}/settings/keys/new and press enter:"
 }
 
 setup_git() {
