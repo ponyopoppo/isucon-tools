@@ -45,7 +45,7 @@ install_pt_query_digest() {
 }
 
 install_netdata() {
-    yes "" | bash <(curl -Ss https://my-netdata.io/kickstart.sh)
+    yes "" | bash <(curl -Ss https://get.netdata.cloud/kickstart.sh)
 }
 
 install_node_js() {
